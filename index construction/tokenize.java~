@@ -1,0 +1,464 @@
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
+
+
+
+public class tokenize {
+static Stemmer s=new Stemmer();
+static Hashtable<String,Hashtable<Integer,ArrayList<Short>>> h1=new Hashtable<String,Hashtable<Integer,ArrayList<Short>>>(10000000,0.75f);
+static Hashtable<Integer,ArrayList<Short>> h2=new Hashtable<Integer,ArrayList<Short>>(1000000,0.75f);
+static Hashtable<Integer,ArrayList<Short>> list=new Hashtable<Integer,ArrayList<Short>>(1000,0.75f);
+static HashSet<String> stopwords=new HashSet<String>(1000,0.75f);
+static ArrayList<Short> temp=new ArrayList<Short>();
+BufferedWriter out1;
+String token,stemword,key,stop;
+StringTokenizer st;
+Integer id;
+short count;
+File file;
+FileWriter fstream;
+int i=0;
+public tokenize(String outpath)
+{
+System.out.println(outpath);
+	try
+	{
+		String stopword="air|jpg|image|gni|map|longd|longm|longs|latd|latm|lats|latns|latew|age|aaa|aaaa|aaaaa|aaaaaa|maintain|line|alone|title|nbsp|able|about|above|according|accordingly|actually|afterwards|again|against|ahead|allow|ago|allows|across|after|ain't|all|along|already|although|always|amid|amidst|amongst|another|anybody|anyhow|anyone|anything|anyway|anyways|anywhere|apart|almost|also|among|and|any|are|aren't|around|aside|ask|asking|back|backwards|backward|became|become|becomes|beside|besides|beyond|both|brief|because|been|before|being|below|between|but|for|can|came|come|comes|can't|cannot|could|could've|couldn't|dear|did|didn't|does|down|downwards|during|each|enough|especially|everybody|exactly|everyone|entirely|everything|doesn't|don't|either|else|ever|every|for|from|fairly|farther|few|found|further|get|got|gives|given|goes|gone|hardly|hence|here|hereafter|herein|instead|had|has|hasn't|have|he'd|he'll|he's|her|hers|him|himself|his|how|how'd|how'll|how's|however|i'd|i'll|i'm|i've|into|isn't|it's|its|inside|indicates|indeed|instead|inward|just|knows|known|least|let|like|likely|lately|later|latter|last|little|look|looks|looking|keep|keeps|kept|may|many|mainly|maybe|made|makes|make|merely|mine|miss|more|moreover|mean|meanwhile|mostly|much|need|near|nearly|needs|nobody|none|per|perhaps|placed|please|plus|possible|presumably|probably|provided|provides|quite|might|might've|mightn't|most|must|must've|mustn't|neither|nor|normally|nothing|now|not|off|often|only|outside|other|others|overall|otherwise|once|our|ought|over|ourselves|own|particular|particularly|past|rather|really|reasonably|recent|recently|regarding|regardless|relatively|respectively|round|saw|seem|seemed|seen|several|said|say|says|shall|shan't|since|somebody|someday|somehow|someone|sure|something|therein|she|such|she'd|she'll|she's|still|specified|specifying|specify|should|should've|shouldn't|since|some|take|tell|tries|tried|tends|truly|taken|taking|than|that|that'll|that's|the|their|them|then|there|there's|those|these|they|they'd|they'll|they're|thanks|they've|this|tis|too|twas|till|unless|unto|until|up|upon|upwards|use|used|useful|uses|using|usually|various|went|whereas|under|unlike|unlikely|unfortunately|wants|was|wasn't|we'd|we'll|we're|were|weren't|what|what'd|what's|when|when|when'd|when'll|when's|where|where'd|where'll|where's|which|while|who|who'd|who'll|who's|whom|why|why'd|why'll|why's|will|with|won't|would|would've|wouldn't|yet|you|you'd|you'll|you're|you've|your|yourself|include|including";
+		
+		st=new StringTokenizer(stopword,"|");
+		while(st.hasMoreTokens())
+		{
+			stopwords.add(st.nextToken());
+			
+		}
+		
+		file = new File(outpath+"out.txt");
+		fstream = new FileWriter(file.getAbsoluteFile());
+	    out1 = new BufferedWriter(fstream); 
+	
+	}
+	catch(Exception e)
+	{
+		
+	}
+}
+	public void setTitle(String title,Integer id) {
+		
+		h2=new Hashtable<Integer,ArrayList<Short>>(100000,0.75f);
+		this.id=id;
+		 st=new StringTokenizer(title," \n#@$%&^*(|=!_-,;");
+        while(st.hasMoreTokens())
+        {
+      	  token=st.nextToken().toLowerCase().replaceAll("[^\\x00-\\x7F]", "");
+      	  
+      	 stemword= token.replaceAll("[^a-zA-Z]","");
+      	 if(stemword.length()<=2)
+      	 {
+      		 continue;
+      	 }
+      	for(short i=0;i<5;i++)
+		{
+			if(i==0)
+			{
+				temp.add(i,(short)1);
+			}
+			else
+			{
+				temp.add(i,(short)0);
+			}
+		}
+   	  
+      	  h2.put(id,new ArrayList<Short>(temp));
+      	
+      	       	
+      	  h1.put(stemword,new Hashtable<Integer,ArrayList<Short>>(h2));
+      	
+      	  h2.clear();
+      	  temp.clear();
+      	 
+      	 } 
+       
+		
+	}
+	public void setText(String text)
+	{
+		int infobox=0;
+		key=(text.toString().toLowerCase()).replaceAll("[^\\x00-\\x7F]", "");
+		st = new StringTokenizer(key," \n#@+$%&^*(|=!_-;.)[]\",:?<>");
+		while(st.hasMoreTokens() && (stop = st.nextToken())!=null) { 
+			if(stopwords.contains(stop))
+			{
+			  continue;
+			}
+			if(stop.startsWith("{{Info"))
+			{
+				++infobox;
+			}
+			if(stop.endsWith("}}"))
+			{
+				--infobox;
+			}
+			if(infobox>=0)
+				continue;
+			stemword = stop.replaceAll("[^a-zA-Z]+","");
+			if(stemword.length()>2)
+    		{
+    		s.add(stemword.toCharArray(),stemword.length());
+    		s.stem();
+    		stemword=s.toString();
+    		h2=h1.get(stemword);
+
+    		if(h2==null)
+    		{
+    			for(short i=0;i<5;i++)
+    			{
+    				if(i==1)
+    				{
+    					temp.add(i,(short)1);
+    				}
+    				else
+    				{
+    					temp.add(i,(short)0);
+    				}
+    			}
+    			list.put(id,new ArrayList<Short>(temp));
+    			h1.put(stemword,new Hashtable<Integer,ArrayList<Short>>(list));
+    			
+    			list.clear();
+    			temp.clear();
+    		}
+    		else
+    		{
+    			if(h2.containsKey(id))
+    			{
+    				temp=h2.get(id);
+    				count=temp.get((short)1);
+    				if(count!=0)
+        			{
+        				temp.set(1,++count);
+        				h2.put(id,new ArrayList<Short>(temp));
+        				h1.put(stemword,new Hashtable<Integer,ArrayList<Short>>(h2));
+        			
+        			}
+    				else
+        			{
+    					temp.set(1,(short)1);
+        				h2.put(id,new ArrayList<Short>(temp));
+        				h1.put(stemword,new Hashtable<Integer,ArrayList<Short>>(h2));
+        				
+        			}
+    				temp.clear();
+    				h2.clear();
+    			}
+    			else
+    			{
+    				for(short i=0;i<5;i++)
+        			{
+        				if(i==1)
+        				{
+        					temp.add(i,(short)1);
+        				}
+        				else
+        				{
+        					temp.add(i,(short)0);
+        				}
+        			}
+    				h2.put(id,new ArrayList<Short>(temp));
+    				h1.put(stemword,new Hashtable<Integer,ArrayList<Short>>(h2));
+    			}
+    			temp.clear();
+				h2.clear();
+    			 			
+    		}
+    		}
+		}
+	}
+	public void setInfobox(String infobox)
+	{
+		key=(infobox.toString().toLowerCase()).replaceAll("[^\\x00-\\x7F]", "");
+		st = new StringTokenizer(key," \n#+@$%&^*(|=!_-;.){}[]\",:?<>");
+		while(st.hasMoreTokens() && (stop = st.nextToken())!=null) { 
+			stemword = stop.replaceAll("[^a-zA-Z]+","");
+			if(stopwords.contains(stemword))
+			{
+			  continue;
+			}
+			if(stemword.length()>2)
+    		{
+    		s.add(stemword.toCharArray(),stemword.length());
+    		s.stem();
+    		stemword=s.toString();
+    		h2=h1.get(stemword);
+
+    		if(h2==null)
+    		{
+    			for(short i=0;i<5;i++)
+    			{
+    				if(i==2)
+    				{
+    					temp.add(i,(short)1);
+    				}
+    				else
+    				{
+    					temp.add(i,(short)0);
+    				}
+    			}
+    			list.put(id,new ArrayList<Short>(temp));
+    			h1.put(stemword,new Hashtable<Integer,ArrayList<Short>>(list));
+    			list.clear();
+    			temp.clear();
+    		}
+    		else
+    		{
+    			if(h2.containsKey(id))
+    			{
+    				temp=h2.get(id);
+    				count=temp.get(2);
+    				if(count!=0)
+        			{
+        				temp.set(2,++count);
+        				h2.put(id,temp);
+        				h1.put(stemword,h2);
+        			}
+    				else
+        			{
+    					temp.set(2,(short)1);
+        				h2.put(id,new ArrayList<Short>(temp));
+        				h1.put(stemword,new Hashtable<Integer,ArrayList<Short>>(h2));
+        			}
+    				temp.clear();
+    				h2.clear();
+    			}
+    			else
+    			{
+    				for(short i=0;i<5;i++)
+        			{
+        				if(i==2)
+        				{
+        					temp.add(i,(short)1);
+        				}
+        				else
+        				{
+        					temp.add(i,(short)0);
+        				}
+        			}
+    				h2.put(id,new ArrayList<Short>(temp));
+    				h1.put(stemword,new Hashtable<Integer,ArrayList<Short>>(h2));
+    			}
+    			temp.clear();
+				h2.clear();
+    			 			
+    		}
+    			}
+    		}
+		}
+		
+		
+	
+	public void setCategories(String category)
+	{
+		key=(category.toString().toLowerCase()).replaceAll("[^\\x00-\\x7F]", "");
+		st = new StringTokenizer(key," ,\n");
+		while(st.hasMoreTokens() && (stop = st.nextToken())!=null) { 
+			stemword = stop.replaceAll("[^a-zA-Z]+","");
+			if(stopwords.contains(stemword))
+			{
+			  continue;
+			}
+			if(stemword.length()>2)
+    		{
+    		s.add(stemword.toCharArray(),stemword.length());
+    		s.stem();
+    		stemword=s.toString();
+    		h2=h1.get(stemword);
+
+    		if(h2==null)
+    		{
+    			for(short i=0;i<5;i++)
+    			{
+    				if(i==3)
+    				{
+    					temp.add(i,(short)1);
+    				}
+    				else
+    				{
+    					temp.add(i,(short)0);
+    				}
+    			}
+    			list.put(id,new ArrayList<Short>(temp));
+    			h1.put(stemword,new Hashtable<Integer,ArrayList<Short>>(list));
+    			list.clear();
+    			temp.clear();
+    		}
+    		else
+    		{
+    			if(h2.containsKey(id))
+    			{
+    				temp=h2.get(id);
+    				count=temp.get(3);
+    				if(count!=0)
+        			{
+        				temp.set(3,++count);
+        				h2.put(id,temp);
+        				h1.put(stemword,h2);
+        			}
+    				else
+        			{
+    					temp.set(3,(short)1);
+        				h2.put(id,new ArrayList<Short>(temp));
+        				h1.put(stemword,new Hashtable<Integer,ArrayList<Short>>(h2));
+        			}
+    				temp.clear();
+    				h2.clear();
+    			}
+    			else
+    			{
+    				for(short i=0;i<5;i++)
+        			{
+        				if(i==3)
+        				{
+        					temp.add(i,(short)1);
+        				}
+        				else
+        				{
+        					temp.add(i,(short)0);
+        				}
+        			}
+    				h2.put(id,new ArrayList<Short>(temp));
+    				h1.put(stemword,new Hashtable<Integer,ArrayList<Short>>(h2));
+    			}
+    			temp.clear();
+				h2.clear();
+    			 			
+    		}
+    			}
+    		}
+		}
+		
+		
+	
+	public void setLinks(String links)
+	{
+		key=(links.toString().toLowerCase());
+		st = new StringTokenizer(key," \n#@$%&^*(|=!_-;.){}[]\",:?<>");
+		while(st.hasMoreTokens() && (stop = st.nextToken())!=null) { 
+			stemword = stop.replaceAll("[^a-zA-Z]+","");
+			if(stopwords.contains(stemword))
+			{
+			  continue;
+			}
+			if(stemword.length()>2)
+    		{
+    		s.add(stemword.toCharArray(),stemword.length());
+    		s.stem();
+    		stemword=s.toString();
+    		h2=h1.get(stemword);
+
+    		if(h2==null)
+    		{
+    			for(int i=0;i<5;i++)
+    			{
+    				if(i==4)
+    				{
+    					temp.add(i,(short)1);
+    				}
+    				else
+    				{
+    					temp.add(i,(short)0);
+    				}
+    			}
+    			list.put(id,new ArrayList<Short>(temp));
+    			h1.put(stemword,new Hashtable<Integer,ArrayList<Short>>(list));
+    			list.clear();
+    			temp.clear();
+    		}
+    		else
+    		{
+    			if(h2.containsKey(id))
+    			{
+    				temp=h2.get(id);
+    				count=temp.get(4);
+    				if(count!=0)
+        			{
+        				temp.set(4,++count);
+        				
+        				h2.put(id,new ArrayList<Short>(temp));
+        				
+        				h1.put(stemword,new Hashtable<Integer,ArrayList<Short>>(h2));
+        				
+        			}
+    				else
+        			{
+    					temp.set(4,(short)1);
+        				h2.put(id,new ArrayList<Short>(temp));
+        				h1.put(stemword,new Hashtable<Integer,ArrayList<Short>>(h2));
+        			}
+    				temp.clear();
+    				h2.clear();
+    			}
+    			else
+    			{
+    				for(short i=0;i<5;i++)
+        			{
+        				if(i==4)
+        				{
+        					temp.add(i,(short)1);
+        				}
+        				else
+        				{
+        					temp.add(i,(short)0);
+        				}
+        			}
+    				h2.put(id,new ArrayList<Short>(temp));
+    				h1.put(stemword,new Hashtable<Integer,ArrayList<Short>>(h2));
+    			}
+    			temp.clear();
+				h2.clear();
+    			 			
+    		}
+    		}
+    		}
+		}
+		
+		
+	
+	public void print(String outpath)
+	{
+
+		try {
+			TreeMap<String,Hashtable<Integer,ArrayList<Short>>> map=new TreeMap<String,Hashtable<Integer,ArrayList<Short>>>(h1);
+			Set<String> s1= map.keySet();
+			Iterator<String> it=s1.iterator();
+    	    String key;
+    	    
+    	    while(it.hasNext())
+        	{
+
+        		key=it.next().toString();
+        		out1.write(key+" "+h1.get(key)+"\n");
+        		
+        	}
+    	    h1.clear();
+    	    out1.flush();
+    	    out1.close();
+    	    h1=new Hashtable<String,Hashtable<Integer,ArrayList<Short>>>(10000000,0.75f);
+    	    ++i;
+    	    file = new File(outpath+"out"+i+".txt");
+    		fstream = new FileWriter(file.getAbsoluteFile());
+    	    out1 = new BufferedWriter(fstream);     
+		}
+    	catch (Exception e)
+    	{
+    		
+    	}
+		
+	}
+}

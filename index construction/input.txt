@@ -1,0 +1,13 @@
+Number of query words <= 10
+T : title, B : body, I : infobox, C : category, O : outlinks
+
+
+-----------------------------------Input Query format----------------------------------
+
+T : thierry T : henry
+B : sachin  B : tendulkar
+I : greek B : python C : mythology
+T : ice B : glacial B : jura B : drumlins
+information retrieval overload precision recall
+
+Output : Top 15 results. Show the titles of the documents you have retrieved.
