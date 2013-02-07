@@ -1,5 +1,4 @@
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -13,10 +12,10 @@ public class lineoffsetmapping {
 		FileWriter fstream;
 		try
 		{
-			file = new File("/home/sandeep/Desktop/offset.txt");
+			file = new File("/home/sandeep/Desktop/offset5.txt");
 			fstream = new FileWriter(file.getAbsoluteFile());
 			out1 = new BufferedWriter(fstream);
-		RandomAccessFile raf = new RandomAccessFile("/home/sandeep/Desktop/merge/out12958.txt","r");
+		RandomAccessFile raf = new RandomAccessFile("/home/sandeep/Desktop/merge/postings.txt","r");
 		StringBuffer tmpValue1=new StringBuffer("0");
 		for(int x=tmpValue1.length();x<10;x++)
     	{

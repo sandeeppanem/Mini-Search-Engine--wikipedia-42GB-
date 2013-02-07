@@ -1,7 +1,6 @@
 import java.io.RandomAccessFile;
-import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -22,7 +21,7 @@ public class search {
 	String[] queries=new String[10];
 	static int querylength=0;
 	static ArrayList<HashSet<String>> docids=new ArrayList<HashSet<String>>();;
-	Hashtable<String,Double> h2=new Hashtable<String,Double>();
+	HashMap<String,Double> h2=new HashMap<String,Double>();
 	TreeMap<Double,ArrayList<String>> s=new TreeMap<Double,ArrayList<String>>();
 	TreeMap<Integer,Integer> sort=new TreeMap<Integer,Integer>();
 	
@@ -46,6 +45,7 @@ public class search {
 			System.out.println("word not found");
 		if(ids!=null)
 		{
+			
 			String[] docs=ids.split(" ");
 			HashSet<String> h1=new HashSet<String>();
 			String document="";
@@ -112,11 +112,11 @@ public class search {
 				}
 				else
 				{
-					Enumeration<String> something=h2.keys();
-					
-					while(something.hasMoreElements())
+					Set<String> s3=h2.keySet();
+					Iterator<String> something=s3.iterator();
+					while(something.hasNext())
 					{
-						String asalu=something.nextElement();
+						String asalu=something.next();
 						Double racha=h2.get(asalu);
 						if(s.containsKey(racha))
 						{
@@ -346,11 +346,11 @@ public class search {
 			else
 			{
 				
-				Enumeration<String> something=h2.keys();
-				
-				while(something.hasMoreElements())
+				Set<String> s3=h2.keySet();
+				Iterator<String> something=s3.iterator();
+				while(something.hasNext())
 				{
-					String asalu=something.nextElement();
+					String asalu=something.next();
 					Double racha=h2.get(asalu);
 					if(s.containsKey(racha))
 					{
@@ -471,12 +471,12 @@ public class search {
 		
 		search s=new search();
 		querylength=args.length;
-		
+		startTime=System.currentTimeMillis();
 		//System.out.println(querylength);
 		for(int i=0;i<args.length;i++)
 		{
 			query =args[i];
-			startTime=System.currentTimeMillis();
+			
 			if(query.contains(":"))
 			s.processQuery(query,i);
 			else
